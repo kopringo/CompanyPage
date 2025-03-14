@@ -10,7 +10,8 @@
         <h1>Panel Zarządzania - Edytuj Realizację</h1>
         <nav>
             <ul>
-                <li><a href="{{ url_for('manage_panel') }}">Tekst Strony Głównej</a></li>
+                <li><a href="{{ url_for('manage_panel') }}">Ustawienia Strony</a></li>
+                <li><a href="{{ url_for('manage_carousel') }}">Zdjęcia Karuzeli</a></li>
                 <li><a href="{{ url_for('manage_realizations') }}">Realizacje</a></li>
                 <li><a href="{{ url_for('index') }}">Strona Główna</a></li>
             </ul>
@@ -57,7 +58,7 @@
     </section>
 
     <footer>
-        <p>&copy; 2025 Moja Firma</p>
+        <p>&copy; 2025 {{ settings.company_name }}</p>
     </footer>
 
     <style>

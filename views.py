@@ -5,8 +5,13 @@ import shutil
 from flask import render_template, request, redirect, url_for, send_from_directory, abort, current_app, Blueprint
 
 from auth import requires_auth
-from models import get_realizations_data, save_realizations_data_to_cache, get_homepage_text, save_homepage_text
-from utils import allowed_file, create_thumbnail, setup_upload_directories, process_photo
+from models import (get_realizations_data, save_realizations_data_to_cache, 
+                   get_homepage_text, save_homepage_text, 
+                   get_website_settings, save_website_settings,
+                   get_carousel_images, save_carousel_images_to_cache)
+from utils import (allowed_file, create_thumbnail, setup_upload_directories, 
+                 process_photo, process_carousel_photo, delete_carousel_photo,
+                 process_company_logo)
 
 # Reguła blokująca dostęp do katalogu config
 def block_config_access(path):
@@ -16,7 +21,13 @@ def block_config_access(path):
 def index():
     realizations = get_realizations_data()
     homepage_text = get_homepage_text()
-    return render_template('index.tpl', realizations=realizations, homepage_text=homepage_text)
+    website_settings = get_website_settings()
+    carousel_images = get_carousel_images()
+    return render_template('index.tpl', 
+                          realizations=realizations, 
+                          homepage_text=homepage_text,
+                          settings=website_settings,
+                          carousel_images=carousel_images)
 
 # Szczegóły realizacji
 def realization_detail(realization_id):
@@ -40,24 +51,117 @@ def realization_detail(realization_id):
 @requires_auth
 def manage_panel():
     if request.method == 'POST':
-        text1 = request.form['text1']
-        text2 = request.form['text2']
-        text3 = request.form['text3']
-        save_homepage_text({"text1": text1, "text2": text2, "text3": text3})
+        if 'section' in request.form:
+            section = request.form['section']
+            
+            # Obsługa tekstów strony głównej
+            if section == 'homepage_text':
+                text1 = request.form['text1']
+                text2 = request.form['text2']
+                text3 = request.form['text3']
+                save_homepage_text({"text1": text1, "text2": text2, "text3": text3})
+                return redirect(url_for('manage_panel', tab='content-settings'))
+            
+            # Obsługa ogólnych ustawień strony
+            elif section == 'general_settings':
+                # Pobierz aktualne ustawienia, aby zachować wszystkie pola
+                current_settings = get_website_settings()
+                
+                # Sprawdź czy przesłano nowe logo
+                company_logo = current_settings.get('company_logo', '')
+                if 'company_logo' in request.files and request.files['company_logo'].filename:
+                    logo_file = request.files['company_logo']
+                    processed_logo = process_company_logo(logo_file)
+                    if processed_logo:
+                        company_logo = processed_logo
+                
+                # Przygotuj dane do zapisu
+                settings = current_settings.copy()
+                settings.update({
+                    "company_name": request.form['company_name'],
+                    "company_logo": company_logo,
+                    "main_slogan": request.form['main_slogan'],
+                    "company_description": request.form['company_description'],
+                    "services_title": request.form['services_title'],
+                    "services_description": request.form['services_description'],
+                    "services_list": request.form['services_list'],
+                    "portfolio_title": request.form['portfolio_title'],
+                    "portfolio_description": request.form['portfolio_description'],
+                    "address": request.form['address'],
+                    "phone": request.form['phone'],
+                    "email": request.form['email'],
+                    "working_hours": request.form['working_hours'],
+                    "nav_home": request.form['nav_home'],
+                    "nav_contact": request.form['nav_contact']
+                })
+                save_website_settings(settings)
+                return redirect(url_for('manage_panel', tab='general-settings'))
+                
+            # Obsługa meta tagów SEO
+            elif section == 'meta_settings':
+                # Pobierz aktualne ustawienia, aby zachować wszystkie pola
+                current_settings = get_website_settings()
+                
+                # Przygotuj dane do zapisu
+                settings = current_settings.copy()
+                settings.update({
+                    "meta_title": request.form['meta_title'],
+                    "meta_description": request.form['meta_description'],
+                    "meta_keywords": request.form['meta_keywords'],
+                    "meta_author": request.form['meta_author'],
+                    "meta_robots": request.form['meta_robots'],
+                    "meta_canonical": request.form['meta_canonical'],
+                    "og_title": request.form['og_title'],
+                    "og_description": request.form['og_description'],
+                    "og_image": request.form['og_image']
+                })
+                save_website_settings(settings)
+                return redirect(url_for('manage_panel', tab='meta-settings'))
+        
         return redirect(url_for('manage_panel'))
     
+    # Get active tab from query parameters or default to general settings
+    tab = request.args.get('tab', 'general-settings')
+    
     homepage_text = get_homepage_text()
-    return render_template('manage.html', homepage_text=homepage_text)
+    website_settings = get_website_settings()
+    return render_template('manage.html', homepage_text=homepage_text, settings=website_settings, active_tab=tab)
+
+# Panel zarządzania - karuzela
+@requires_auth
+def manage_carousel():
+    website_settings = get_website_settings()
+    
+    if request.method == 'POST':
+        # Obsługa dodawania nowych zdjęć do karuzeli
+        if 'action' in request.form and request.form['action'] == 'add':
+            photos = request.files.getlist('photos')
+            for photo in photos:
+                process_carousel_photo(photo)
+            save_carousel_images_to_cache()  # Odśwież cache
+            
+        # Obsługa usuwania zdjęć z karuzeli
+        elif 'action' in request.form and request.form['action'] == 'delete':
+            if 'filename' in request.form:
+                delete_carousel_photo(request.form['filename'])
+                save_carousel_images_to_cache()  # Odśwież cache
+                
+        return redirect(url_for('manage_carousel'))
+    
+    carousel_images = get_carousel_images()
+    return render_template('manage_carousel.html', carousel_images=carousel_images, settings=website_settings)
 
 # Lista realizacji w panelu zarządzania
 @requires_auth
 def manage_realizations():
     realizations = get_realizations_data()
-    return render_template('manage_realizations.html', realizations=realizations)
+    website_settings = get_website_settings()
+    return render_template('manage_realizations.html', realizations=realizations, settings=website_settings)
 
 # Dodawanie nowej realizacji
 @requires_auth
 def add_realization():
+    website_settings = get_website_settings()
     if request.method == 'POST':
         short_description = request.form['short_description']
         long_description = request.form['long_description']
@@ -92,12 +196,13 @@ def add_realization():
         save_realizations_data_to_cache()  # Odśwież cache
         return redirect(url_for('manage_realizations'))
     
-    return render_template('add_realization.html')
+    return render_template('add_realization.html', settings=website_settings)
 
 # Edycja realizacji
 @requires_auth
 def edit_realization(realization_id):
     realizations = get_realizations_data()
+    website_settings = get_website_settings()
     realization = next((r for r in realizations if r['id'] == realization_id), None)
     if not realization:
         abort(404)
@@ -123,7 +228,7 @@ def edit_realization(realization_id):
         save_realizations_data_to_cache()  # Odśwież cache
         return redirect(url_for('manage_realizations'))
     
-    return render_template('edit_realization.html', realization=realization)
+    return render_template('edit_realization.html', realization=realization, settings=website_settings)
 
 # Usuwanie realizacji
 @requires_auth
@@ -142,6 +247,14 @@ def realization_thumbnail(realization_id, filename):
 def realization_original_photo(realization_id, filename):
     return send_from_directory(os.path.join(current_app.config['UPLOAD_FOLDER'], realization_id, 'oryginalne'), filename)
 
+# Dostęp do zdjęć karuzeli
+def carousel_photo(filename):
+    return send_from_directory(current_app.config['CAROUSEL_FOLDER'], filename)
+
+# Dostęp do plików w katalogu public_data (dla logo itp.)
+def public_file(filename):
+    return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
+
 def register_views(app):
     """Rejestruje wszystkie widoki (routes) w aplikacji"""
     
@@ -154,8 +267,11 @@ def register_views(app):
     # Szczegóły realizacji
     app.add_url_rule('/realization/<realization_id>', 'realization_detail', realization_detail)
     
-    # Panel zarządzania - tekst strony głównej
+    # Panel zarządzania - tekst strony głównej i ustawienia
     app.add_url_rule('/manage', 'manage_panel', manage_panel, methods=['GET', 'POST'])
+    
+    # Panel zarządzania - karuzela
+    app.add_url_rule('/manage/carousel', 'manage_carousel', manage_carousel, methods=['GET', 'POST'])
     
     # Lista realizacji w panelu zarządzania
     app.add_url_rule('/manage/realizations', 'manage_realizations', manage_realizations)
@@ -170,7 +286,13 @@ def register_views(app):
     app.add_url_rule('/manage/realizations/delete/<realization_id>', 'delete_realization', delete_realization)
     
     # Dostęp do plików miniatur
-    app.add_url_rule('/realizacje/<realization_id>/miniatury/<filename>', 'realization_thumbnail', realization_thumbnail)
+    app.add_url_rule('/public_data/<realization_id>/miniatury/<filename>', 'realization_thumbnail', realization_thumbnail)
     
     # Dostęp do oryginalnych plików
-    app.add_url_rule('/realizacje/<realization_id>/oryginalne/<filename>', 'realization_original_photo', realization_original_photo)
+    app.add_url_rule('/public_data/<realization_id>/oryginalne/<filename>', 'realization_original_photo', realization_original_photo)
+    
+    # Dostęp do zdjęć karuzeli
+    app.add_url_rule('/public_data/carousel/<filename>', 'carousel_photo', carousel_photo)
+    
+    # Dostęp do plików w katalogu public_data
+    app.add_url_rule('/public_data/<filename>', 'public_file', public_file)

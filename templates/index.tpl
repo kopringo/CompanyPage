@@ -3,7 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Realizacje</title>
+    <title>{{ settings.meta_title }}</title>
+    
+    <!-- Meta Tags SEO -->
+    <meta name="description" content="{{ settings.meta_description }}">
+    <meta name="keywords" content="{{ settings.meta_keywords }}">
+    {% if settings.meta_author %}
+    <meta name="author" content="{{ settings.meta_author }}">
+    {% endif %}
+    <meta name="robots" content="{{ settings.meta_robots }}">
+    {% if settings.meta_canonical %}
+    <link rel="canonical" href="{{ settings.meta_canonical }}">
+    {% endif %}
+    
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ settings.og_title or settings.meta_title }}">
+    <meta property="og:description" content="{{ settings.og_description or settings.meta_description }}">
+    {% if settings.og_image %}
+    <meta property="og:image" content="{{ settings.og_image }}">
+    {% endif %}
+    {% if settings.meta_canonical %}
+    <meta property="og:url" content="{{ settings.meta_canonical }}">
+    {% endif %}
+    
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -160,6 +183,20 @@
             font-size: 1.75rem;
             font-weight: 700;
             color: var(--primary-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo img {
+            height: 60px;
+            margin-right: 15px;
+            margin-top: -10px;
+            margin-bottom: -10px;
+            display: block; /* Gwarantuje, że obrazek będzie wyświetlany */
+        }
+        
+        .logo span {
+            display: block; /* Gwarantuje, że nazwa firmy będzie wyświetlana */
         }
         
         .nav-links {
@@ -571,13 +608,17 @@
     <header class="header">
         <div class="container">
             <nav class="navbar">
-                <div class="logo">Moja Firma</div>
+                <div class="logo">
+                    {% if settings.company_logo %}
+                    <img src="{{ url_for('public_file', filename=settings.company_logo) }}">
+                    {% endif %}
+                    <span>{{ settings.company_name }}</span>
+                </div>
                 <ul class="nav-links">
-                    <li><a href="#home" class="active">Home</a></li>
-                    <li><a href="#services">Zakres Usług</a></li>
-                    <li><a href="#portfolio">Realizacje</a></li>
-                    <li><a href="#contact">Kontakt</a></li>
-                    <li><a href="{{ url_for('manage_panel') }}">Panel</a></li>
+                    <li><a href="#home" class="active">{{ settings.nav_home }}</a></li>
+                    <li><a href="#services">{{ settings.services_title }}</a></li>
+                    <li><a href="#portfolio">{{ settings.portfolio_title }}</a></li>
+                    <li><a href="#contact">{{ settings.nav_contact }}</a></li>
                 </ul>
             </nav>
         </div>
@@ -586,8 +627,8 @@
     <section class="hero" id="home">
         <div class="container">
             <div class="hero-content">
-                <h1 class="hero-title">Profesjonalne Realizacje dla Wymagających Klientów</h1>
-                <p class="hero-description">Jesteśmy firmą z wieloletnim doświadczeniem, specjalizującą się w realizacji projektów na najwyższym poziomie. Sprawdź nasze portfolio i przekonaj się o jakości naszych usług.</p>
+                <h1 class="hero-title">{{ settings.main_slogan }}</h1>
+                <p class="hero-description">{{ settings.company_description }}</p>
                 <div class="hero-buttons">
                     <a href="#portfolio" class="btn btn-primary">Nasze Realizacje</a>
                     <a href="#contact" class="btn btn-secondary">Skontaktuj się</a>
@@ -595,16 +636,9 @@
             </div>
         </div>
         <div class="hero-image">
-            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1950&q=80')"></div>
-            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1950&q=80')"></div>
-            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1497366811353-6870744d04b2?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1950&q=80')"></div>
-            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1950&q=80')"></div>
-            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1950&q=80')"></div>
-            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1950&q=80')"></div>
-            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1503387762-592deb58ef4e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1950&q=80')"></div>
-            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1507652313519-d4e9174996dd?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1950&q=80')"></div>
-            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1531972111231-7482a8e8b98d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1950&q=80')"></div>
-            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1550136513-548af4445338?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1950&q=80')"></div>
+            {% for image in carousel_images %}
+            <div class="hero-slide" style="background-image: url('{{ url_for('carousel_photo', filename=image) }}')"></div>
+            {% endfor %}
             <div class="hero-image-overlay"></div>
         </div>
     </section>
@@ -612,19 +646,19 @@
     <section class="section services" id="services">
         <div class="container">
             <div class="section-title">
-                <h2>Zakres Usług</h2>
-                <p>Poznaj szeroki wachlarz usług, które oferujemy naszym klientom</p>
+                <h2>{{ settings.services_title }}</h2>
+                <p>{{ settings.services_description }}</p>
             </div>
             <div class="services-grid">
-                <div class="service-card">
-                    {{ homepage_text['text1']|safe }}
-                </div>
-                <div class="service-card">
-                    {{ homepage_text['text2']|safe }}
-                </div>
-                <div class="service-card">
-                    {{ homepage_text['text3']|safe }}
-                </div>
+                {% if settings.services_list %}
+                    {% for service in settings.services_list.split('\n') %}
+                        {% if service.strip() %}
+                        <div class="service-card">
+                            <h3>{{ service }}</h3>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
             </div>
         </div>
     </section>
@@ -632,8 +666,8 @@
     <section class="section portfolio" id="portfolio">
         <div class="container">
             <div class="section-title">
-                <h2>Nasze Realizacje</h2>
-                <p>Wybrane projekty z naszego portfolio, które odzwierciedlają jakość naszej pracy</p>
+                <h2>{{ settings.portfolio_title }}</h2>
+                <p>{{ settings.portfolio_description }}</p>
             </div>
             <div class="portfolio-grid">
                 {% for realization in realizations %}
@@ -667,35 +701,35 @@
     <footer class="footer" id="contact">
         <div class="container">
             <div class="footer-grid">
-                <div class="footer-column">
-                    <h3 class="footer-heading">Lokalizacja</h3>
-                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2325.286545087609!2d19.40626791609345!3d54.1657781801595!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46fd63b535a07c3f%3A0xf853d8eb7e21fc16!2sAl.%20Grunwaldzka%202C%2C%2082-300%20Elbl%C4%85g!5e0!3m2!1spl!2spl!4v1646919851901!5m2!1spl!2spl" class="footer-map" allowfullscreen="" loading="lazy"></iframe>
-                    <p class="footer-text">Aleja Grunwaldzka 2C, Elbląg</p>
-                </div>
+
                 <div class="footer-column">
                     <h3 class="footer-heading">Kontakt</h3>
                     <div class="footer-contact">
                         <div class="footer-contact-item">
                             <span class="footer-contact-icon">📍</span>
-                            <span>Aleja Grunwaldzka 2C, 82-300 Elbląg</span>
+                            <span>{{ settings.address }}</span>
                         </div>
                         <div class="footer-contact-item">
                             <span class="footer-contact-icon">📞</span>
-                            <span>+48 123 456 789</span>
+                            <span>{{ settings.phone }}</span>
                         </div>
                         <div class="footer-contact-item">
                             <span class="footer-contact-icon">✉️</span>
-                            <span>kontakt@mojafirma.pl</span>
+                            <span>{{ settings.email }}</span>
                         </div>
                         <div class="footer-contact-item">
                             <span class="footer-contact-icon">🕒</span>
-                            <span>Pn-Pt: 9:00-17:00</span>
+                            <span>{{ settings.working_hours }}</span>
                         </div>
                     </div>
                 </div>
+                <div class="footer-column">
+                    <h3 class="footer-heading">Lokalizacja</h3>
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2325.286545087609!2d19.40626791609345!3d54.1657781801595!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46fd63b535a07c3f%3A0xf853d8eb7e21fc16!2sAl.%20Grunwaldzka%202C%2C%2082-300%20Elbl%C4%85g!5e0!3m2!1spl!2spl!4v1646919851901!5m2!1spl!2spl" class="footer-map" allowfullscreen="" loading="lazy"></iframe>
+                </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 Moja Firma. Wszelkie prawa zastrzeżone.</p>
+                <p>&copy; 2025 {{ settings.company_name }}. Wszelkie prawa zastrzeżone.</p>
             </div>
         </div>
     </footer>
@@ -777,7 +811,7 @@
                             
                             realization.photos.forEach(photo => {
                                 const img = document.createElement('img');
-                                img.src = `/realizacje/${realization.id}/oryginalne/${photo}`;
+                                img.src = `/public_data/${realization.id}/oryginalne/${photo}`;
                                 img.alt = realization.shortDescription;
                                 modalPhotos.appendChild(img);
                             });

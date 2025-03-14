@@ -8,7 +8,7 @@ if [ "$(docker ps -aq -f name=atlant-app)" ]; then
 fi
 
 # Utwórz katalog realizacje jeśli nie istnieje
-REALIZATIONS_DIR="$(pwd)/realizacje"
+REALIZATIONS_DIR="$(pwd)/public_data"
 if [ ! -d "$REALIZATIONS_DIR" ]; then
     echo "Tworzenie katalogu realizacje: $REALIZATIONS_DIR"
     mkdir -p "$REALIZATIONS_DIR"
@@ -45,7 +45,7 @@ echo "Uruchamianie kontenera..."
 docker run -d \
     --name atlant-app \
     -p 5000:5000 \
-    -v "$REALIZATIONS_DIR:/app/realizacje" \
+    -v "$REALIZATIONS_DIR:/app/public_data" \
     -v "$CONFIG_DIR:/app/config" \
     --restart unless-stopped \
     atlant-app

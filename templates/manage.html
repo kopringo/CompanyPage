@@ -4,13 +4,57 @@
     <meta charset="UTF-8">
     <title>Panel Zarządzania</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            background-color: #f1f1f1;
+            margin-right: 5px;
+            border-radius: 5px 5px 0 0;
+        }
+        .tab.active {
+            background-color: white;
+            border-bottom: 1px solid white;
+            margin-bottom: -1px;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-top: none;
+            margin-top: -1px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .form-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .form-section h3 {
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+    </style>
 </head>
 <body>
     <header>
         <h1>Panel Zarządzania</h1>
         <nav>
             <ul>
-                <li><a href="{{ url_for('manage_panel') }}">Tekst Strony Głównej</a></li>
+                <li><a href="{{ url_for('manage_panel') }}">Ustawienia Strony</a></li>
+                <li><a href="{{ url_for('manage_carousel') }}">Zdjęcia Karuzeli</a></li>
                 <li><a href="{{ url_for('manage_realizations') }}">Realizacje</a></li>
                 <li><a href="{{ url_for('index') }}">Strona Główna</a></li>
             </ul>
@@ -18,26 +62,221 @@
     </header>
 
     <section id="manage-content">
-        <h2>Edycja Tekstu Strony Głównej</h2>
-        <form method="post">
-            <div class="form-group">
-                <label for="text1">Tekst Sekcja 1:</label>
-                <textarea id="text1" name="text1" rows="5">{{ homepage_text['text1'] }}</textarea>
-            </div>
-            <div class="form-group">
-                <label for="text2">Tekst Sekcja 2:</label>
-                <textarea id="text2" name="text2" rows="5">{{ homepage_text['text2'] }}</textarea>
-            </div>
-            <div class="form-group">
-                <label for="text3">Tekst Sekcja 3:</label>
-                <textarea id="text3" name="text3" rows="5">{{ homepage_text['text3'] }}</textarea>
-            </div>
-            <button type="submit">Zapisz Tekst</button>
-        </form>
+        <h2>Zarządzanie Ustawieniami Strony</h2>
+        
+        <div class="tabs">
+            <div class="tab {% if active_tab == 'general-settings' %}active{% endif %}" onclick="openTab(event, 'general-settings')">Ustawienia Główne</div>
+            <div class="tab {% if active_tab == 'meta-settings' %}active{% endif %}" onclick="openTab(event, 'meta-settings')">Meta Tagi SEO</div>
+        </div>
+        
+        <!-- Zakładka Ustawienia Główne -->
+        <div id="general-settings" class="tab-content {% if active_tab == 'general-settings' %}active{% endif %}">
+            <form method="post" enctype="multipart/form-data">
+                <input type="hidden" name="section" value="general_settings">
+                
+                <div class="form-section">
+                    <h3>Nagłówek</h3>
+                    <div class="form-group">
+                        <label for="company_name">Nazwa Firmy:</label>
+                        <input type="text" id="company_name" name="company_name" value="{{ settings.company_name }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="company_logo">Logo Firmy (60px wysokości):</label>
+                        <input type="file" id="company_logo" name="company_logo" accept="image/*">
+                        <p class="form-hint">Logo będzie wyświetlane obok nazwy firmy w nagłówku strony. Zalecana proporcja: poziome logo.</p>
+                        {% if settings.company_logo %}
+                        <div style="margin-top: 10px;">
+                            <p>Aktualne logo:</p>
+                            <img src="{{ url_for('public_file', filename=settings.company_logo) }}" alt="Logo firmy" style="height: 60px;">
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="nav_home">Tekst Zakładki Home:</label>
+                        <input type="text" id="nav_home" name="nav_home" value="{{ settings.nav_home }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="nav_contact">Tekst Zakładki Kontakt:</label>
+                        <input type="text" id="nav_contact" name="nav_contact" value="{{ settings.nav_contact }}">
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>Strona Główna</h3>
+                    <div class="form-group">
+                        <label for="main_slogan">Hasło Główne:</label>
+                        <input type="text" id="main_slogan" name="main_slogan" value="{{ settings.main_slogan }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="company_description">Opis Firmy:</label>
+                        <textarea id="company_description" name="company_description" rows="3">{{ settings.company_description }}</textarea>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>Sekcje Strony</h3>
+                    <div class="form-group">
+                        <label for="services_title">Tytuł Sekcji Usług:</label>
+                        <input type="text" id="services_title" name="services_title" value="{{ settings.services_title }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="services_description">Opis Sekcji Usług:</label>
+                        <textarea id="services_description" name="services_description" rows="2">{{ settings.services_description }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="services_list">Zakres Usług (każda linia = jeden kafelek):</label>
+                        <textarea id="services_list" name="services_list" rows="10" style="font-family: monospace;">{{ settings.services_list }}</textarea>
+                        <p class="form-hint">Wprowadź listę usług, każda usługa w nowej linii. Każda pozycja będzie wyświetlana jako oddzielny kafelek na stronie głównej.</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="portfolio_title">Tytuł Sekcji Portfolio:</label>
+                        <input type="text" id="portfolio_title" name="portfolio_title" value="{{ settings.portfolio_title }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="portfolio_description">Opis Sekcji Portfolio:</label>
+                        <textarea id="portfolio_description" name="portfolio_description" rows="2">{{ settings.portfolio_description }}</textarea>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>Dane Kontaktowe</h3>
+                    <div class="form-group">
+                        <label for="address">Adres:</label>
+                        <input type="text" id="address" name="address" value="{{ settings.address }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Telefon:</label>
+                        <input type="text" id="phone" name="phone" value="{{ settings.phone }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" value="{{ settings.email }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="working_hours">Godziny Pracy:</label>
+                        <input type="text" id="working_hours" name="working_hours" value="{{ settings.working_hours }}">
+                    </div>
+                </div>
+                
+                <button type="submit">Zapisz Ustawienia</button>
+            </form>
+        </div>
+        
+        <!-- Zakładka Meta Tagi SEO -->
+        <div id="meta-settings" class="tab-content {% if active_tab == 'meta-settings' %}active{% endif %}">
+            <form method="post">
+                <input type="hidden" name="section" value="meta_settings">
+                
+                <div class="form-section">
+                    <h3>Meta Tagi SEO</h3>
+                    <div class="form-group">
+                        <label for="meta_title">Tytuł Strony (Title):</label>
+                        <input type="text" id="meta_title" name="meta_title" value="{{ settings.meta_title }}">
+                        <p class="form-hint">Tytuł strony widoczny w wynikach wyszukiwania (najlepiej 50-60 znaków).</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="meta_description">Opis Strony (Description):</label>
+                        <textarea id="meta_description" name="meta_description" rows="3">{{ settings.meta_description }}</textarea>
+                        <p class="form-hint">Krótki opis strony widoczny w wynikach wyszukiwania (najlepiej 150-160 znaków).</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="meta_keywords">Słowa Kluczowe (Keywords):</label>
+                        <textarea id="meta_keywords" name="meta_keywords" rows="2">{{ settings.meta_keywords }}</textarea>
+                        <p class="form-hint">Słowa kluczowe oddzielone przecinkami (np. architektura, projektowanie, budowa).</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="meta_author">Autor:</label>
+                        <input type="text" id="meta_author" name="meta_author" value="{{ settings.meta_author }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="meta_robots">Indeksowanie (Robots):</label>
+                        <select id="meta_robots" name="meta_robots">
+                            <option value="index, follow" {% if settings.meta_robots == 'index, follow' %}selected{% endif %}>Indeksuj i śledź linki (index, follow)</option>
+                            <option value="index, nofollow" {% if settings.meta_robots == 'index, nofollow' %}selected{% endif %}>Indeksuj, ale nie śledź linków (index, nofollow)</option>
+                            <option value="noindex, follow" {% if settings.meta_robots == 'noindex, follow' %}selected{% endif %}>Nie indeksuj, ale śledź linki (noindex, follow)</option>
+                            <option value="noindex, nofollow" {% if settings.meta_robots == 'noindex, nofollow' %}selected{% endif %}>Nie indeksuj i nie śledź linków (noindex, nofollow)</option>
+                        </select>
+                        <p class="form-hint">Instrukcje dla robotów wyszukiwarek dotyczące indeksowania strony.</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="meta_canonical">Adres kanoniczny (Canonical URL):</label>
+                        <input type="text" id="meta_canonical" name="meta_canonical" value="{{ settings.meta_canonical }}">
+                        <p class="form-hint">Pełny URL do preferowanej wersji strony (np. https://twojadomena.pl).</p>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>Open Graph (dla mediów społecznościowych)</h3>
+                    <div class="form-group">
+                        <label for="og_title">OG Tytuł:</label>
+                        <input type="text" id="og_title" name="og_title" value="{{ settings.og_title }}">
+                        <p class="form-hint">Tytuł wyświetlany podczas udostępniania w mediach społecznościowych.</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="og_description">OG Opis:</label>
+                        <textarea id="og_description" name="og_description" rows="3">{{ settings.og_description }}</textarea>
+                        <p class="form-hint">Opis wyświetlany podczas udostępniania w mediach społecznościowych.</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="og_image">OG Adres obrazka:</label>
+                        <input type="text" id="og_image" name="og_image" value="{{ settings.og_image }}">
+                        <p class="form-hint">Pełny URL do obrazka wyświetlanego podczas udostępniania (najlepiej 1200x630 pikseli).</p>
+                    </div>
+                </div>
+                
+                <button type="submit">Zapisz Meta Tagi</button>
+            </form>
+        </div>
+        
     </section>
 
     <footer>
-        <p>&copy; 2025 Moja Firma</p>
+        <p>&copy; 2025 {{ settings.company_name }}</p>
     </footer>
+    
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            
+            // Ukryj wszystkie elementy z klasą "tab-content"
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+            
+            // Usuń klasę "active" ze wszystkich elementów z klasą "tab"
+            tablinks = document.getElementsByClassName("tab");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            
+            // Pokaż aktualną zakładkę i dodaj klasę "active" do przycisku, który ją otworzył
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+            
+            // Zapisz aktywną zakładkę w historii przeglądarki
+            var url = new URL(window.location.href);
+            url.searchParams.set('tab', tabName);
+            window.history.replaceState({}, '', url);
+        }
+        
+        // Przy ładowaniu strony, automatycznie otwórz aktywną zakładkę
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sprawdź, czy jest parametr tab w URL
+            var urlParams = new URLSearchParams(window.location.search);
+            var activeTab = urlParams.get('tab');
+            
+            // Jeśli nie ma parametru tab w URL, domyślnie otwórz pierwszą zakładkę
+            if (!activeTab) {
+                activeTab = 'general-settings';
+            }
+            
+            // Otwórz odpowiednią zakładkę
+            var tabElement = document.querySelector('.tab[onclick*="' + activeTab + '"]');
+            if (tabElement) {
+                tabElement.click();
+            }
+        });
+    </script>
 </body>
 </html>

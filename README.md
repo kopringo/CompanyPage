@@ -2,6 +2,8 @@
 
 This project is a simple website designed to showcase the projects of an architecture office. It allows for easy management of project listings without the need for a traditional database – all data is stored in files on the disk.
 
+An application created almost entirely using AI.
+
 ## Application Features
 
 - **Admin Panel** – Secure access via password authentication.
