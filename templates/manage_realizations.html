@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Zarządzanie Realizacjami</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Panel Zarządzania - Realizacje</h1>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('manage_panel') }}">Tekst Strony Głównej</a></li>
+                <li><a href="{{ url_for('manage_realizations') }}">Realizacje</a></li>
+                <li><a href="{{ url_for('index') }}">Strona Główna</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="manage-content">
+        <h2>Lista Realizacji</h2>
+        <a href="{{ url_for('add_realization') }}" class="button-add">Dodaj Nową Realizację</a>
+        <br><br>
+        {% if realizations %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Zdjęcie Główne</th>
+                    <th>Krótki Opis</th>
+                    <th>Akcje</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for realization in realizations %}
+                <tr>
+                    <td>
+                        {% if realization.main_photo %}
+                        <img src="{{ url_for('realization_thumbnail', realization_id=realization.id, filename=realization.main_photo) }}" alt="{{ realization.short_description }}" style="max-width: 100px; height: auto;">
+                        {% else %}
+                        Brak zdjęcia
+                        {% endif %}
+                    </td>
+                    <td>{{ realization.short_description }}</td>
+                    <td>
+                        <a href="{{ url_for('edit_realization', realization_id=realization.id) }}" class="button-edit">Edytuj</a>
+                        <a href="{{ url_for('delete_realization', realization_id=realization.id) }}" class="button-delete" onclick="return confirm('Czy na pewno chcesz usunąć realizację {{ realization.short_description }}?')">Usuń</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>Brak realizacji.</p>
+        {% endif %}
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Moja Firma</p>
+    </footer>
+
+    <style>
+        .button-add, .button-edit, .button-delete {
+            display: inline-block;
+            padding: 8px 15px;
+            margin-bottom: 5px;
+            text-decoration: none;
+            border-radius: 5px;
+            color: white;
+        }
+
+        .button-add {
+            background-color: #5cb85c;
+        }
+
+        .button-edit {
+            background-color: #007bff;
+        }
+
+        .button-delete {
+            background-color: #d9534f;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+    </style>
+</body>
+</html>

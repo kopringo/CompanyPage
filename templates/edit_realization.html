@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Edytuj Realizację</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Panel Zarządzania - Edytuj Realizację</h1>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('manage_panel') }}">Tekst Strony Głównej</a></li>
+                <li><a href="{{ url_for('manage_realizations') }}">Realizacje</a></li>
+                <li><a href="{{ url_for('index') }}">Strona Główna</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="manage-content">
+        <h2>Edytuj Realizację: {{ realization.short_description }}</h2>
+        <form method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="short_description">Krótki Opis:</label>
+                <input type="text" id="short_description" name="short_description" value="{{ realization.short_description }}" required>
+            </div>
+            <div class="form-group">
+                <label for="long_description">Długi Opis:</label>
+                <textarea id="long_description" name="long_description" rows="7" required>{{ realization.long_description }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Aktualne Zdjęcia:</label>
+                <div class="current-photos">
+                    {% for photo_filename in realization.photos %}
+                    <div class="photo-item">
+                        <img src="{{ url_for('realization_thumbnail', realization_id=realization.id, filename=photo_filename) }}" alt="{{ realization.short_description }}" style="max-width: 100px; height: auto;">
+                        <label>
+                            <input type="radio" name="main_photo" value="{{ photo_filename }}" {% if photo_filename == realization.main_photo %}checked{% endif %}> Główne
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+                <p class="form-hint">Wybierz zdjęcie główne, zaznaczając radio button poniżej miniaturki.</p>
+            </div>
+
+
+            <div class="form-group">
+                <label for="photos">Dodaj Kolejne Zdjęcia:</label>
+                <input type="file" id="photos" name="photos" accept="image/*" multiple>
+                <p class="form-hint">Możesz dodać więcej zdjęć do realizacji. Nowe zdjęcia zostaną dodane do istniejących.</p>
+            </div>
+
+
+            <button type="submit">Zapisz Zmiany</button>
+        </form>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Moja Firma</p>
+    </footer>
+
+    <style>
+        .current-photos {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .photo-item {
+            margin-right: 10px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .photo-item img {
+            display: block;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+
+        .form-hint {
+            font-size: 0.9em;
+            color: #777;
+            margin-top: 5px;
+        }
+    </style>
+</body>
+</html>
